@@ -56,6 +56,7 @@ if(Boost_VERSION VERSION_LESS "106300")
 endif()
 
 include_directories("${OMPL_INCLUDE_DIR}")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/informedkd/include")
 
 
 if(MSVC)
@@ -140,6 +141,7 @@ add_subdirectory(tests)
 add_subdirectory(demos)
 add_subdirectory(scripts)
 add_subdirectory(doc)
+add_subdirectory(informedkd)
 
 target_link_flags(ompl)
 set(PKG_NAME "ompl")
