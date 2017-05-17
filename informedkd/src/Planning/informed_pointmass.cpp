@@ -40,26 +40,26 @@ public:
         // return false;
         // Narrow Corridor problem
 
-        // TODO: temporarily
-        return true;
-        /*
         for (int i = 0; i < param.dimensions; i = i + 2)
         {
-            if (i == 0)
+            if (i % 2 == 0)
             {
-                if (state_rv->values[i] < -0.5 || state_rv->values[i] > 0.5)
+                if (state_rv->values[i] < -10 || state_rv->values[i] > 10)
                 {
-                    return true;
+                    return false;
                 }
-                else if (state_rv->values[i] < -5 || (state_rv->values[i] > -0.05 && state_rv->values[i] < 0.05) ||
-                         state_rv->values[i] > 5)
+            }
+            else
+            {
+                if (state_rv->values[i] < - param.v_max ||
+                         state_rv->values[i] > param.v_max)
                 {
-                    return true;
+                    return false;
                 }
             }
         }
-        return false;
-        */
+        return true;
+
     }
 };
 
@@ -165,7 +165,8 @@ void planWithSimpleSetup(void)
     const double level_set = std::numeric_limits<double>::infinity();
     const auto sampler = ompl::base::MyInformedSamplerPtr(
         //new ompl::base::MCMCSampler(si, base_pdef, level_set, 1000, batch_size, alpha, sigma, max_steps));
-          new ompl::base::DimtHierarchicalRejectionSampler(si, base_pdef, dimt, level_set, 100, 100));
+        //  new ompl::base::DimtHierarchicalRejectionSampler(si, base_pdef, dimt, level_set, 100, 100));
+        new ompl::base::RejectionSampler(si, base_pdef, level_set, 100, 100));
 
     // Set up the final problem with the full optimization objective
     ob::ProblemDefinitionPtr pdef(new ob::ProblemDefinition(si));
