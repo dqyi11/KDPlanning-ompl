@@ -138,7 +138,6 @@ base::PlannerStatus MyInformedRRTstar::solve(const base::PlannerTerminationCondi
         OMPL_INFORM("%s: Starting planning with existing solution of cost %.5f", getName().c_str(),
                     solution->cost.value());
 
-
     if (useKNearest_)
 
         OMPL_INFORM("%s: k_rrt_ %u ->> Initial k-nearest value of %u", getName().c_str(),
@@ -156,6 +155,22 @@ base::PlannerStatus MyInformedRRTstar::solve(const base::PlannerTerminationCondi
 
     while (ptc == false)
     {
+        //first iteration, try to explicitly connect start to goal
+        if (iterations_ == 0)
+        {
+            if (goal_s && goalMotions_.size() < goal_s->maxSampleCount() && goal_s->canSample())
+                goal_s->sampleGoal(rstate);
+
+            // find closest state in the tree
+            Motion *nmotion = nn_->nearest(rmotion); //this is the start
+
+            if (si_->checkMotion(nmotion->state, rstate))
+            {
+                OMPL_INFORM("TRIVIAL PROBLEM< CONNECT START TO GOAL OPTIMALY---NOT RUNNING PLANNER ");
+                return base::PlannerStatus(false, false);
+            }
+        }
+
         iterations_++;
 
         // sample random state (with goal biasing)

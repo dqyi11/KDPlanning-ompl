@@ -11,6 +11,8 @@ configure_file("${VERSION_DIR}/config.h.in" "${VERSION_DIR}/config.h")
 # correspond to the basic ompl library      #
 #############################################
 file(GLOB_RECURSE OMPL_SOURCE_CODE datastructures/*.cpp util/*.cpp base/*.cpp geometric/*.cpp control/*.cpp tools/*.cpp)
+file(GLOB_RECURSE OMPL_HEADER_CODE datastructures/*.h util/*.h base/*.h geometric/*.h control/*.h tools/*.h)
+#add_custom_target(headers SOURCES ${OMPL_HEADER_CODE})
 
 if(NOT OMPL_HAVE_EIGEN3)
     list(REMOVE_ITEM OMPL_SOURCE_CODE
@@ -78,6 +80,7 @@ else(MSVC)
   endif(MINGW)
   set_target_properties(ompl PROPERTIES VERSION "${OMPL_VERSION}" SOVERSION "${OMPL_ABI_VERSION}")
 endif(MSVC)
+
 
 # install the library
 install(TARGETS ompl

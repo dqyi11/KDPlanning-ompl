@@ -40,6 +40,12 @@ public:
         // return false;
         // Narrow Corridor problem
 
+        if (state_rv->values[0] > -1 && state_rv->values[0] < 1 &&
+              state_rv->values[2] > -1 && state_rv->values[2] < 1  )
+        {
+            return false;
+        }
+
         for (int i = 0; i < param.dimensions; i = i + 2)
         {
             if (i % 2 == 0)
@@ -48,6 +54,7 @@ public:
                 {
                     return false;
                 }
+
             }
             else
             {
@@ -70,7 +77,7 @@ void planWithSimpleSetup(void)
     // Initializations
     std::vector<double> maxVelocities(param.dof, param.v_max);
     std::vector<double> maxAccelerations(param.dof, param.a_max);
-    DIMTPtr dimt = std::make_shared<DIMT>(maxVelocities, maxAccelerations);
+    DIMTPtr dimt = std::make_shared<DIMT>( maxAccelerations, maxVelocities );
 
     if (MAIN_VERBOSE)
         std::cout << "Created the double integrator model!" << std::endl;
@@ -122,13 +129,13 @@ void planWithSimpleSetup(void)
             int_state[i] = 2;
         }
     }
-    start_state[0] = -1.5;
+    start_state[0] = -4;
     start_s->as<ompl::base::RealVectorStateSpace::StateType>()->values[0] = start_state[0];
-    goal_state[0] = 1.5;
+    goal_state[0] = 4;
     goal_s->as<ompl::base::RealVectorStateSpace::StateType>()->values[0] = goal_state[0];
-    start_state[2] = 1;
+    start_state[2] = 0;
     start_s->as<ompl::base::RealVectorStateSpace::StateType>()->values[2] = start_state[2];
-    goal_state[2] = 1;
+    goal_state[2] = 0;
     goal_s->as<ompl::base::RealVectorStateSpace::StateType>()->values[2] = goal_state[2];
 
     std::cout << "MinTime b/w start and goal = "
@@ -164,9 +171,9 @@ void planWithSimpleSetup(void)
     double batch_size = 1000;
     const double level_set = std::numeric_limits<double>::infinity();
     const auto sampler = ompl::base::MyInformedSamplerPtr(
-        //new ompl::base::MCMCSampler(si, base_pdef, level_set, 1000, batch_size, alpha, sigma, max_steps));
-        //  new ompl::base::DimtHierarchicalRejectionSampler(si, base_pdef, dimt, level_set, 100, 100));
-        new ompl::base::RejectionSampler(si, base_pdef, level_set, 100, 100));
+        new ompl::base::MCMCSampler(si, base_pdef, level_set, 1000, batch_size, alpha, sigma, max_steps));
+        //new ompl::base::DimtHierarchicalRejectionSampler(si, base_pdef, dimt, level_set, 100, 100));
+        //new ompl::base::RejectionSampler(si, base_pdef, level_set, 100, 100));
 
     // Set up the final problem with the full optimization objective
     ob::ProblemDefinitionPtr pdef(new ob::ProblemDefinition(si));
@@ -199,7 +206,7 @@ void planWithSimpleSetup(void)
         std::cout << "Set up Informed RRT* planner!" << std::endl;
 
     // Run planner
-    ob::PlannerStatus solved = planner->solve(1500.0);
+    ob::PlannerStatus solved = planner->solve(60.0);
 
     if (MAIN_VERBOSE)
         std::cout << "Planner solved!" << std::endl;
