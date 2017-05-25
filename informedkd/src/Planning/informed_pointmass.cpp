@@ -166,14 +166,20 @@ void planWithSimpleSetup(void)
 
     // Construct Sampler with the base pdef and base optimization objective
     double sigma = 1;
-    int max_steps = 100;
-    double alpha = 1.0;
-    double batch_size = 1000;
+    int max_steps = 20;
+    double alpha = 0.5;
+    double max_call_num = 100;
+    double batch_size = 100;
+    double epsilon = 0.1;
+    double L = 5;
+    int num_trials = 5;
     const double level_set = std::numeric_limits<double>::infinity();
     const auto sampler = ompl::base::MyInformedSamplerPtr(
-        new ompl::base::MCMCSampler(si, base_pdef, level_set, 1000, batch_size, alpha, sigma, max_steps));
-        //new ompl::base::DimtHierarchicalRejectionSampler(si, base_pdef, dimt, level_set, 100, 100));
-        //new ompl::base::RejectionSampler(si, base_pdef, level_set, 100, 100));
+        new ompl::base::HitAndRun(si, base_pdef, level_set, max_call_num, batch_size, num_trials));
+        //new ompl::base::HMCSampler(si, base_pdef, level_set, max_call_num, batch_size, alpha, L, epsilon, sigma, max_steps));
+        //new ompl::base::DimtHierarchicalRejectionSampler(si, base_pdef, dimt, level_set, max_call_num, batch_size));
+        //new ompl::base::RejectionSampler(si, base_pdef, level_set, max_call_num, batch_size));
+
 
     // Set up the final problem with the full optimization objective
     ob::ProblemDefinitionPtr pdef(new ob::ProblemDefinition(si));

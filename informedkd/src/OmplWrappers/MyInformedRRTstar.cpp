@@ -173,6 +173,8 @@ base::PlannerStatus MyInformedRRTstar::solve(const base::PlannerTerminationCondi
 
         iterations_++;
 
+        //OMPL_INFORM(" %u-th iteration ", iterations_);
+
         // sample random state (with goal biasing)
         // Goal samples are only sampled until maxSampleCount() goals are in the
         // tree, to prohibit duplicate goal states.
@@ -414,6 +416,12 @@ base::PlannerStatus MyInformedRRTstar::solve(const base::PlannerTerminationCondi
                         if (opt_->isFinite(bestCost_) == false)
                         {
                             OMPL_INFORM("%s: Found an initial solution with a cost of %.2f "
+                                        "in %u iterations (%u vertices in the graph)",
+                                        getName().c_str(), goalMotions_[i]->cost.value(), iterations_, nn_->size());
+                        }
+                        else
+                        {
+                            OMPL_INFORM("%s: Found an better solution with a cost of %.2f "
                                         "in %u iterations (%u vertices in the graph)",
                                         getName().c_str(), goalMotions_[i]->cost.value(), iterations_, nn_->size());
                         }
