@@ -104,7 +104,7 @@ namespace ompl
             virtual Eigen::VectorXd getRandomSample(double min, double max, const int dim);
         };
 
-        class HitAndRun : GibbsSampler
+        class HitAndRun : public GibbsSampler
         {
         public:
             HitAndRun(const SpaceInformationPtr &si, const ProblemDefinitionPtr &problem, const double levelSet,

@@ -23,3 +23,17 @@ target_link_libraries(informed_pointmass
                       omplwrapperLib
                       ompl
                      )
+
+# Informed Pointmass all
+add_executable(informed_pointmass_all
+               informed_pointmass_all.cpp
+              )
+target_link_libraries(informed_pointmass_all
+                   ${OMPL_LIBRARIES}
+                   ${Boost_FILESYSTEM_LIBRARY}
+                   ${Boost_SYSTEM_LIBRARY}
+                   samplerLib
+                   dimtLib
+                   omplwrapperLib
+                   ompl
+                  )
