@@ -9,8 +9,8 @@
 
 #include "Sampler/Sampler.h"
 #include "Sampler/RejectionSampler.h"
-#include "Sampler/MonteCarloSamplers.h"
-#include "Sampler/HitAndRun.h"
+#include "Sampler/MonteCarloSampler.h"
+#include "Sampler/HitAndRunSampler.h"
 #include "OmplWrappers/MyOptimizationObjective.h"
 #include "OmplWrappers/MyInformedRRTstar.h"
 #include "OmplWrappers/OmplHelpers.h"

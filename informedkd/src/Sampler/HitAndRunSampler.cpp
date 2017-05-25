@@ -34,7 +34,7 @@
 
 /* Authors: Cole Gulino, Daqing Yi, Oren Salzman, and Rohan Thakker */
 
-#include "Sampler/HitAndRun.h"
+#include "Sampler/HitAndRunSampler.h"
 
 const bool VERBOSE = false;
 
