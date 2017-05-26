@@ -185,7 +185,10 @@ void planWithSimpleSetup(void)
 
         pdef->setOptimizationObjective(opt);
 
-        ob::PlannerPtr planner = std::make_shared<MyInformedRRTstar>(si);
+        ob::MyInformedRRTstarPtr informedPlanner = std::make_shared<ob::MyInformedRRTstar>(si);
+        informedPlanner->initLogFile("test", "HNR", 0);
+        ob::PlannerPtr planner = static_cast<ob::PlannerPtr>(informedPlanner);
+
 
         // Set the problem instance for our planner to solve
         planner->setProblemDefinition(pdef);
@@ -224,7 +227,7 @@ void planWithSimpleSetup(void)
 
         pdef->setOptimizationObjective(opt);
 
-        ob::PlannerPtr planner = std::make_shared<MyInformedRRTstar>(si);
+        ob::PlannerPtr planner = std::make_shared<ob::MyInformedRRTstar>(si);
 
         // Set the problem instance for our planner to solve
         planner->setProblemDefinition(pdef);
@@ -263,7 +266,7 @@ void planWithSimpleSetup(void)
 
         pdef->setOptimizationObjective(opt);
 
-        ob::PlannerPtr planner = std::make_shared<MyInformedRRTstar>(si);
+        ob::PlannerPtr planner = std::make_shared<ob::MyInformedRRTstar>(si);
 
         // Set the problem instance for our planner to solve
         planner->setProblemDefinition(pdef);
@@ -302,7 +305,7 @@ void planWithSimpleSetup(void)
 
         pdef->setOptimizationObjective(opt);
 
-        ob::PlannerPtr planner = std::make_shared<MyInformedRRTstar>(si);
+        ob::PlannerPtr planner = std::make_shared<ob::MyInformedRRTstar>(si);
 
         // Set the problem instance for our planner to solve
         planner->setProblemDefinition(pdef);
