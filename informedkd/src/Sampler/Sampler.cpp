@@ -309,7 +309,7 @@ namespace ompl
             return true;
             */
             updateLevelSet(maxCost.value());
-            VectorXd sample;
+            VectorXd sample(si_->getStateDimension()+1);
             double *val = static_cast<ompl::base::RealVectorStateSpace::StateType *>(statePtr)->values;
             while(false == sampleInLevelSet(sample)){}
 

@@ -229,7 +229,7 @@ void planWithSimpleSetup(void)
 
     int iteration_num = 1;
     std::string caseName = "simple";
-    for(unsigned int i=0;i<iteration_num;i++)
+    for(int i=0;i<iteration_num;i++)
     {
         // Hit And Run
         {
