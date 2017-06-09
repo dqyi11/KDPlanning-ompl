@@ -256,7 +256,9 @@ namespace ompl
             double cost = getCost(end);
 
             int steps = 0;
-            while (cost > getLevelSet())
+            const int maxSteps = 10;
+            int maxTrials = 10;
+            while (cost > getLevelSet() && maxTrials > 0)
             {
                 double last_cost = cost;
                 Eigen::VectorXd inv_jacobian = getInvJacobian(end);
@@ -265,12 +267,14 @@ namespace ompl
                 steps++;
 
                 // If the number of steps reaches some threshold, start over
-                const double trap_threshold = 0.0001;
-                if (last_cost - cost < trap_threshold)
+                if (steps > maxSteps)
                 {
+                    steps = 0;
                     end = MonteCarloSampler::getRandomSample();
                     cost = getCost(end);
                 }
+
+                maxTrials --;
             }
 
             return end;
