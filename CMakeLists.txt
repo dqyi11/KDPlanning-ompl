@@ -58,6 +58,7 @@ endif()
 include_directories("${OMPL_INCLUDE_DIR}")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/informedkd/include")
 
+add_definitions(-DBOOST_MATH_NO_LONG_DOUBLE_MATH_FUNCTIONS)
 
 if(MSVC)
     add_definitions(-DBOOST_ALL_NO_LIB)
@@ -131,6 +132,13 @@ if (FLANN_FOUND)
     include_directories(SYSTEM "${FLANN_INCLUDE_DIRS}")
     link_directories(${FLANN_LIBRARY_DIRS})
 endif()
+
+find_package(JsonCpp REQUIRED)
+if(NOT JSONCPP_FOUND)
+   message("Jsoncpp not found")
+endif()
+include_directories(${JSONCPP_INCLUDE_DIR})
+link_libraries(${JSONCPP_LIBRARY})
 
 # R is needed for running Planner Arena locally
 find_program(R_EXEC R)

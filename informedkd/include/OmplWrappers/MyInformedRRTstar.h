@@ -3,6 +3,7 @@
 // OMPL
 #include <ompl/geometric/planners/rrt/InformedRRTstar.h>
 #include "ompl/datastructures/NearestNeighborsLinear.h"
+#include "ompl/datastructures/NearestNeighborsGNAT.h"
 #include <iostream>
 #include <fstream>
 #include <ios>
@@ -40,8 +41,8 @@ namespace ompl
                 mode_ = LOAD_SAMPLES;
                 if(nn_)
                 {
-                    nn_.reset();
-                    nn_ = std::make_shared<NearestNeighborsLinear<Motion *>>();
+                    //nn_.reset(new NearestNeighborsLinear<Motion *>());
+                    nn_.reset(new NearestNeighborsGNAT<Motion*>());
                     nn_->setDistanceFunction([this](const Motion *a, const Motion *b) { return distanceFunction(a, b); });
                 }
 
@@ -54,10 +55,11 @@ namespace ompl
             ompl::base::PlannerStatus solveAndSaveSamples(std::string filename, double solveTime)
             {
                 mode_ = SAVE_SAMPLES;
+
                 if(nn_)
                 {
-                    nn_.reset();
-                    nn_ = std::make_shared<NearestNeighborsLinear<Motion *>>();
+                    //nn_.reset(new NearestNeighborsLinear<Motion *>());
+                    nn_.reset(new NearestNeighborsGNAT<Motion*>());
                     nn_->setDistanceFunction([this](const Motion *a, const Motion *b) { return distanceFunction(a, b); });
                 }
 
@@ -70,12 +72,16 @@ namespace ompl
             std::string fromState(ompl::base::State* fromState);
             bool toState(std::string stateString, ompl::base::State* toState);
 
+            uint64_t getSamplesGeneratedNum() { return samplesGeneratedNum_; }
+
 
         private:
             PlannerMode mode_;
             std::ofstream out_;
             std::ofstream sampleSaveStream_;
             std::ifstream sampleLoadStream_;
+
+            uint64_t samplesGeneratedNum_;
 
         };
 

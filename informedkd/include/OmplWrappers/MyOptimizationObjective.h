@@ -39,6 +39,10 @@ namespace ompl
             /// objective
             OptimizationObjectivePtr opt_ = nullptr;
 
+        protected:
+            const ompl::base::State* startState_;
+            const ompl::base::State* goalState_;
+
         public:
             ///
             /// Constructor
@@ -50,8 +54,10 @@ namespace ompl
             /// @param stateCostFn Cost function for a single point in space
             /// @param motionCostFn Cost function between two states
             ///
-            MyOptimizationObjective(const SpaceInformationPtr &si, const MyInformedSamplerPtr sampler)
+            MyOptimizationObjective(const SpaceInformationPtr &si, const MyInformedSamplerPtr sampler,
+                                    const ompl::base::State* startState, const ompl::base::State* goalState)
               : OptimizationObjective(si), sampler_(sampler), opt_(sampler_->problem()->getOptimizationObjective())
+              , startState_(startState), goalState_(goalState)
             {
             }
 
@@ -79,7 +85,7 @@ namespace ompl
             /// @param maxNumberCalls Maximum number of sampling calls
             /// @return Infromed sampler
             ///
-            virtual InformedSamplerPtr allocInformedStateSampler(const ProblemDefinitionPtr& probDefn,
+            InformedSamplerPtr allocInformedStateSampler(const ProblemDefinitionPtr& probDefn,
                                                                  unsigned int maxNumberCalls) const override;
 
             ///
@@ -95,11 +101,11 @@ namespace ompl
 
         class GeometricObjective : public OptimizationObjective
         {
-        private:
-            const Eigen::VectorXd startState_;
-
-            const Eigen::VectorXd goalState_;
-
+        protected:
+            const ompl::base::State* startState_;
+            const ompl::base::State* goalState_;
+            Eigen::VectorXd startVec_;
+            Eigen::VectorXd goalVec_;
         public:
             ///
             /// Constructor
@@ -108,9 +114,14 @@ namespace ompl
             /// @param startState Start state of the problem
             /// @param goalState Goal state of the problem
             ///
-            GeometricObjective(const SpaceInformationPtr &si, const Eigen::VectorXd &startState,
-                               const Eigen::VectorXd &goalState)
-              : OptimizationObjective(si), startState_(startState), goalState_(goalState)
+            GeometricObjective(const SpaceInformationPtr &si,
+                               const ompl::base::State* startState,
+                               const ompl::base::State* goalState)
+              : OptimizationObjective(si),
+                startState_(startState),
+                goalState_(goalState),
+                startVec_(param.dimensions),
+                goalVec_(param.dimensions)
             {
             }
 
@@ -143,27 +154,11 @@ namespace ompl
 
         class DimtObjective : public OptimizationObjective
         {
+        protected:
+            const ompl::base::State* startState_;
+            const ompl::base::State* goalState_;
         private:
-            const Eigen::VectorXd startState_;
-
-            const Eigen::VectorXd goalState_;
-
             const DIMTPtr dimt_;
-
-            Eigen::VectorXd get_eigen_vector(const ompl::base::State* s) const
-            {
-                const ompl::base::RealVectorStateSpace::StateType * state =
-                        static_cast<const ompl::base::RealVectorStateSpace::StateType *>(s);
-
-                Eigen::VectorXd v(param.dimensions);
-
-                for (uint i = 0; i < param.dimensions; i++)
-                {
-                    v[i] = state->values[i];
-                }
-
-                return v;
-            }
 
         public:
             ///
@@ -174,12 +169,15 @@ namespace ompl
             /// @param goalState Goal state of the problem
             /// @param di Double Integrator model
             ///
-            DimtObjective(const SpaceInformationPtr &si, const Eigen::VectorXd &startState,
-                          const Eigen::VectorXd &goalState, const DIMTPtr dimt)
-              : OptimizationObjective(si),
-                startState_(startState), goalState_(goalState),
-                dimt_(dimt)
+            DimtObjective(const SpaceInformationPtr &si,
+                          const ompl::base::State* startState,
+                          const ompl::base::State* goalState,
+                          const DIMTPtr dimt)
+              : OptimizationObjective(si)
+              , dimt_(dimt)
             {
+                startState_ = startState;
+                goalState_ = goalState;
             }
 
             ///
@@ -188,11 +186,7 @@ namespace ompl
             /// @param s State to get the cost for
             /// @return Cost of the state
             ///
-            virtual Cost stateCost(const State *s) const override
-            {
-                return Cost(dimt_->getMinTime(startState_, get_eigen_vector(s)) +
-                            dimt_->getMinTime(get_eigen_vector(s), goalState_));
-            }
+            virtual Cost stateCost(const State *s) const override;
 
             ///
             /// Return the cost of moving from s1 to s2
@@ -201,10 +195,7 @@ namespace ompl
             /// @param s2 Goal state
             /// @return Cost of going from s1 to s2
             ///
-            virtual Cost motionCost(const State *s1, const State *s2) const override
-            {
-                return Cost(dimt_->getMinTime(get_eigen_vector(s1), get_eigen_vector(s2)));
-            }
+            virtual Cost motionCost(const State *s1, const State *s2) const override;
 
             ///
             /// Combines cost
@@ -219,10 +210,7 @@ namespace ompl
             }
 
 
-            Cost getCostIfSmallerThan(const State* s1, const State *s2, Cost thresholdCost) const
-            {
-                return Cost(dimt_->getMinTimeIfSmallerThan(get_eigen_vector(s1), get_eigen_vector(s2), thresholdCost.value()));
-            }
+            Cost getCostIfSmallerThan(const State* s1, const State *s2, Cost thresholdCost) const;
         };
     }
 }

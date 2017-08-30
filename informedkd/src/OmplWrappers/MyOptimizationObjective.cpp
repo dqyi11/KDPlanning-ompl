@@ -11,7 +11,6 @@ using Eigen::VectorXd;
 
 // Internal Libraries
 #include <Dimt/Params.h>
-#include <Sampler/MonteCarloSampler.h>
 
 // stdlib
 #include <exception>
@@ -68,23 +67,45 @@ ompl::base::InformedSamplerPtr ompl::base::MyOptimizationObjective::allocInforme
     return sampler_;
 }
 
+
 namespace ompl
 {
     namespace base
     {
         Cost GeometricObjective::stateCost(const State *s) const
         {
-            return Cost((startState_ - get_eigen_vector(s)).norm() + (goalState_ - get_eigen_vector(s)).norm());
+            Eigen::VectorXd stateVec(param.dimensions);
+            get_eigen_vector(s, stateVec);
+            return Cost((startVec_ - stateVec).norm() + (goalVec_ - stateVec).norm());
         }
 
         Cost GeometricObjective::motionCost(const State *s1, const State *s2) const
         {
-            return Cost((get_eigen_vector(s1) - get_eigen_vector(s2)).norm());
+            Eigen::VectorXd s1Vec, s2Vec;
+            get_eigen_vector(s1, s1Vec);
+            get_eigen_vector(s2, s2Vec);
+            return Cost((s1Vec - s2Vec).norm());
         }
 
         Cost GeometricObjective::combineCosts(Cost c1, Cost c2) const
         {
             return Cost(c1.value() + c2.value());
+        }
+
+        Cost DimtObjective::stateCost(const State *s) const
+        {
+            return Cost(dimt_->getMinTime(startState_, s) +
+                        dimt_->getMinTime(s, goalState_));
+        }
+
+        Cost DimtObjective::motionCost(const State *s1, const State *s2) const
+        {
+            return Cost(dimt_->getMinTime(s1, s2));
+        }
+
+        Cost DimtObjective::getCostIfSmallerThan(const State* s1, const State *s2, Cost thresholdCost) const
+        {
+            return Cost(dimt_->getMinTimeIfSmallerThan(s1, s2, thresholdCost.value()));
         }
     }  // namespace base
 }  // namespace ompl

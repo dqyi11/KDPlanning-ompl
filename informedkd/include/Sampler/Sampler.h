@@ -105,6 +105,11 @@ namespace ompl
             ///
             double getRandomDimension(const double max, const double min);
 
+
+#ifdef USE_NLOPT
+            static double inequalConstraint(const std::vector<double> &x,
+                                            std::vector<double> &grad, void *data);
+#endif
         protected:
             ompl::base::SpaceInformationPtr si_;
 
@@ -112,12 +117,19 @@ namespace ompl
 
             double levelSet_;
             double timelimit_;
+            double batchTimelimit_;
 
             /// random generator
             UniformRealRandomGenerator uniRndGnr_;
 
             Eigen::VectorXd stateMax_;
             Eigen::VectorXd stateMin_;
+
+            double acceptanceRatio_;
+            uint64_t numAcceptedSamples_;
+            uint64_t numRejectedSamples_; 
+
+            ompl::base::State* tmpState_ ;
 
         public:
             ///
@@ -133,16 +145,26 @@ namespace ompl
             ///
             MyInformedSampler(const SpaceInformationPtr &si, const ProblemDefinitionPtr &problem,
                               const double levelSet, const unsigned int maxNumberCalls,
-                              const int sampleBatchSize, const double timelimit = 3600)
+                              const int sampleBatchSize, const double timelimit = 60)
               : InformedSampler(problem, maxNumberCalls)
               , sampleBatchSize_(sampleBatchSize)
               , si_(si)
               , problem_(problem)
               , levelSet_(levelSet)
               , timelimit_(timelimit)
+              , batchTimelimit_(7200)
+              , acceptanceRatio_(1.0)
+              , numAcceptedSamples_(0)
+              , numRejectedSamples_(0)
             {
                 started_ = false;
                 std::tie(stateMin_, stateMax_) = getStateLimits();
+                tmpState_ = si_->allocState();
+            }
+
+            virtual ~MyInformedSampler()
+            {
+                si_->freeState(tmpState_);
             }
 
             ///
@@ -188,7 +210,7 @@ namespace ompl
             /// @return A series of samples of shape (number of samples, sample dimension)
             ///
             virtual Eigen::MatrixXd sample(const uint numSamples,
-                                           std::chrono::high_resolution_clock::duration &duration) = 0;
+                                           std::chrono::high_resolution_clock::duration &duration);
 
             ///
             /// Get one sample for the problem space
@@ -315,7 +337,34 @@ namespace ompl
             ///
             virtual bool isInBound(const Eigen::VectorXd &state) const;
 
+            ///
+            /// Get one random uniform sample from the space
+            ///
+            /// @return Random uniform vector from the space
+            ///
+            virtual Eigen::VectorXd getRandomSample();
 
+            ///
+            /// Surf down the cost function to get to the levelset
+            ///
+            /// @param start Starting state
+            /// @return Path to the level set
+            ///
+            virtual Eigen::VectorXd newtonRaphson(const Eigen::VectorXd &start, double levelSet_);
+
+
+            Eigen::VectorXd findSolutionInLevelSet(Eigen::VectorXd& init, double levelSet_);
+
+
+            void setSingleSampleTimelimit(double timelimit) { timelimit_ = timelimit; }
+            double getSingleSampleTimelimit() { return timelimit_; }
+            void setBatchSampleTimelimit(double timelimit) { batchTimelimit_ = timelimit; }
+            double getBatchSampleTimelimit() { return batchTimelimit_; }
+
+            /// Get acceptance ratio
+            double getAcceptanceRatio();
+
+            void resetAcceptanceRatio();
 
         };  // MyInformedSampler
 

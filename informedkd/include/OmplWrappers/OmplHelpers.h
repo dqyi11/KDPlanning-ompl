@@ -1,11 +1,7 @@
 #pragma once
 
 #include <OmplWrappers/MyOptimizationObjective.h>
-
 #include <ompl/base/OptimizationObjective.h>
-
-using Eigen::VectorXd;
-using Eigen::MatrixXd;
 
 ///
 /// Function to convert a State to a VectorXd
@@ -13,7 +9,7 @@ using Eigen::MatrixXd;
 /// @param s Ompl State
 /// @return Eigen VectorXd
 ///
-Eigen::VectorXd get_eigen_vector(const ompl::base::State *s);
+bool get_eigen_vector(const ompl::base::State *s, Eigen::VectorXd& vec);
 
 ///
 /// Function to convert a std::vector to a VectorXd

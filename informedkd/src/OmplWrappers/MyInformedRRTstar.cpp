@@ -67,7 +67,7 @@ MyInformedRRTstar::MyInformedRRTstar(const ompl::base::SpaceInformationPtr &si) 
     // A hack to approximate an infinite connection radius
     setRewireFactor(10000.);
 
-    setTreePruning(false);
+    setTreePruning(true);
     setNewStateRejection(false);
     setDelayCC(false);
 }
@@ -161,9 +161,24 @@ base::PlannerStatus MyInformedRRTstar::solve(const base::PlannerTerminationCondi
     // our functor for sorting nearest neighbors
     CostIndexCompare compareFn(costs, *opt_);
 
+    samplesGeneratedNum_ = 0;
+
     std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
     while (ptc == false)
     {
+        /*
+        if(out_.is_open() && nn_->size() % 250==0)
+        {
+            for (size_t i = 0; i < goalMotions_.size(); ++i)
+            {
+                std::chrono::high_resolution_clock::time_point currentTime = std::chrono::high_resolution_clock::now();
+                std::chrono::high_resolution_clock::duration duration = currentTime - startTime;
+                out_ << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << " , " <<
+                       goalMotions_[i]->cost.value() << ", " << iterations_ << " , " << nn_->size() << " , " << samplesGeneratedNum_ << std::endl;
+            }
+        }*/
+
+        /*
         //first iteration, try to explicitly connect start to goal
         if (iterations_ == 0)
         {
@@ -178,7 +193,7 @@ base::PlannerStatus MyInformedRRTstar::solve(const base::PlannerTerminationCondi
                 OMPL_INFORM("TRIVIAL PROBLEM< CONNECT START TO GOAL OPTIMALY---NOT RUNNING PLANNER ");
                 return base::PlannerStatus(false, false);
             }
-        }
+        }*/
 
         iterations_++;
 
@@ -209,9 +224,10 @@ base::PlannerStatus MyInformedRRTstar::solve(const base::PlannerTerminationCondi
             if (opt_->isFinite(bestCost_))
             {
                 if (!sampleUniform(rstate))
-                {
+                {                    
                     continue;
                 }
+                samplesGeneratedNum_++;
             }
             else //(opt_->isFinite(bestCost_) == false)
             {
@@ -284,7 +300,9 @@ base::PlannerStatus MyInformedRRTstar::solve(const base::PlannerTerminationCondi
             motion->cost = opt_->combineCosts(nmotion->cost, motion->incCost);
 
             // Find nearby neighbors of the new motion
-            getNeighbors(motion, nbh);
+            //getNeighbors(motion, nbh);
+            nbh.clear();
+            nn_->list(nbh);
 
             rewireTest += nbh.size();
             ++statesGenerated;
@@ -507,7 +525,7 @@ base::PlannerStatus MyInformedRRTstar::solve(const base::PlannerTerminationCondi
                             std::chrono::high_resolution_clock::time_point currentTime = std::chrono::high_resolution_clock::now();
                             std::chrono::high_resolution_clock::duration duration = currentTime - startTime;
                             out_ << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << " , " <<
-                                   goalMotions_[i]->cost.value() << ", " << iterations_ << " , " << nn_->size() << std::endl;
+                                   goalMotions_[i]->cost.value() << ", " << iterations_ << " , " << nn_->size() << " , " << samplesGeneratedNum_ << std::endl;
                         }
                         bestCost_ = goalMotions_[i]->cost;
                         updatedSolution = true;
@@ -639,7 +657,7 @@ bool MyInformedRRTstar::toState(std::string stateString, ompl::base::State* toSt
 std::string MyInformedRRTstar::fromState(ompl::base::State* fromState)
 {
     std::stringstream oss;
-    for(int dimIdx = 0; dimIdx < getSpaceInformation()->getStateDimension(); ++dimIdx)
+    for(unsigned int dimIdx = 0; dimIdx < getSpaceInformation()->getStateDimension(); ++dimIdx)
     {
         oss << fromState->as<ompl::base::RealVectorStateSpace::StateType>()->values[dimIdx] << " ";
     }

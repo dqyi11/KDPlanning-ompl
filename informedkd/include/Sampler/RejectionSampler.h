@@ -77,25 +77,14 @@ namespace ompl
             ///
             RejectionSampler(const SpaceInformationPtr &si, const ProblemDefinitionPtr &problem, const double levelSet,
                              const unsigned int maxNumberCalls, const int sampleBatchSize)
-              : MyInformedSampler(si, problem, levelSet, maxNumberCalls, sampleBatchSize),
-                rejectionRatio_(1.0)
+              : MyInformedSampler(si, problem, levelSet, maxNumberCalls, sampleBatchSize)
             {
             }
-
-            /// Only function that you must implement
-            virtual Eigen::MatrixXd sample(const uint numSamples,
-                                           std::chrono::high_resolution_clock::duration &duration) override;
 
             virtual bool sampleInLevelSet(Eigen::VectorXd& sample) override;
 
             /// Can implement as many private functions as you want to help do the sampling
             virtual Eigen::VectorXd getRandomSample(const Eigen::VectorXd min, const Eigen::VectorXd max, const int size);
-
-            /// Get rejection ratio
-            double getRejectionRatio() { return rejectionRatio_; }
-
-        protected:
-            double rejectionRatio_;
 
         };
 
@@ -123,17 +112,6 @@ namespace ompl
             {
             }
 
-            ///
-            /// Get a series of samples for the problem space
-            ///
-            /// @param numSamples Number of samples to get
-            /// @param time Boolean that determines if the time to run the proccess is
-            /// displayed
-            /// @return A series of samples of shape (number of samples, sample dimension)
-            ///
-            virtual Eigen::MatrixXd sample(const uint numSamples,
-                                           std::chrono::high_resolution_clock::duration &duration) override;
-
              virtual bool sampleInLevelSet(Eigen::VectorXd& sample) override;
         private:
             ///
@@ -145,7 +123,8 @@ namespace ompl
             /// @param sample Reference to a sample that gets changed in place
             /// @return (c_start, c_goal)
             ///
-            virtual std::tuple<double, double> HRS(const int start_index, const int end_index, Eigen::VectorXd &sample);
+            virtual std::tuple<double, double> HRS(const int start_index, const int end_index, Eigen::VectorXd &sample,
+                                                   double timeLeft);
 
             ///
             /// Calculates the cost of a leaf node
