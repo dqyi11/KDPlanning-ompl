@@ -10,6 +10,7 @@ class MultiLinkDIWindow : public dart::gui::SimWindow
 public:
     MultiLinkDIWindow() : di_(NULL)
     {
+        waypointIdx_ = 0;
     }
 
     void setMultiLinkDI(MultiLinkDI* di)
@@ -34,9 +35,19 @@ public:
 
     void animate(int perMs= 100);
 
+    void keyboard(unsigned char key, int x, int y) override;
+
+    void prevWaypoint();
+
+    void nextWaypoint();
+
 protected:
     Eigen::MatrixXd path_;
     MultiLinkDI* di_;
+    int waypointIdx_;
+
+    int default_step_time = 50000;
+    int default_end_delay_time = 500000;
 };
 
 #endif // MULTILINKDI_WINDOW_HPP_

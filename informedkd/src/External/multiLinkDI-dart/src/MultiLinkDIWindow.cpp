@@ -1,5 +1,6 @@
 #include "MultiLinkDI.hpp"
 #include "MultiLinkDIWindow.hpp"
+#include <iostream>
 
 void MultiLinkDIWindow::draw()
 {
@@ -22,4 +23,68 @@ void MultiLinkDIWindow::setConfigPath(Eigen::MatrixXd& configPath)
         }
     }
 
+}
+
+void MultiLinkDIWindow::keyboard(unsigned char key, int x, int y)
+{
+    switch(key)
+    {
+    case 'a':
+    {
+        prevWaypoint();
+        std::cout << "PRESS A " << waypointIdx_ << std::endl;
+        Eigen::VectorXd configA = di_->getWaypoint(waypointIdx_);
+        di_->setConfiguration( configA );
+        break;
+    }
+    case 'd':
+    {
+        nextWaypoint();
+        std::cout << "PRESS D " << waypointIdx_ << std::endl;
+        Eigen::VectorXd configD = di_->getWaypoint(waypointIdx_);
+        di_->setConfiguration( configD );
+        break;
+    }
+    case 's':
+    {
+        std::cout << "PRESS S " << waypointIdx_ << std::endl;
+        if(waypointIdx_ < di_->getWaypointNum()-1)
+        {
+            Eigen::VectorXd currConfig = di_->getWaypoint(waypointIdx_);
+            Eigen::VectorXd nextConfig = di_->getWaypoint(waypointIdx_+1);
+            Eigen::VectorXd deltaConfig = nextConfig - currConfig;
+            for(double i=di_->getResolutionSize();
+                i <= 1.0+di_->getResolutionSize(); i+= di_->getResolutionSize())
+            {
+                usleep(default_step_time);
+                Eigen::VectorXd newConfig = currConfig + i * deltaConfig;
+                di_->setConfiguration( newConfig );
+                render();
+                std::cout << "time step " << i << std::endl;
+            }
+            usleep(default_end_delay_time);
+            di_->setConfiguration(currConfig);
+        }
+    }
+    default:
+        SimWindow::keyboard(key, x, y);
+    }
+}
+
+void MultiLinkDIWindow::prevWaypoint()
+{
+    waypointIdx_ --;
+    if(waypointIdx_ < 0)
+    {
+       waypointIdx_ = di_->getWaypointNum() - 1;
+    }
+}
+
+void MultiLinkDIWindow::nextWaypoint()
+{
+    waypointIdx_ ++;
+    if(waypointIdx_ >= di_->getWaypointNum())
+    {
+        waypointIdx_ = 0;
+    }
 }
