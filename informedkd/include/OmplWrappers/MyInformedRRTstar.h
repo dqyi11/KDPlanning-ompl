@@ -57,13 +57,13 @@ namespace ompl
             {
                 mode_ = SAVE_SAMPLES;
 
-                /*
+
                 if(nn_)
                 {
                     //nn_.reset(new NearestNeighborsLinear<Motion *>());
                     nn_.reset(new NearestNeighborsGNAT<Motion*>());
                     nn_->setDistanceFunction([this](const Motion *a, const Motion *b) { return distanceFunction(a, b); });
-                }*/
+                }
 
                 sampleSaveStream_.open(filename.c_str(), std::ios::out);
                 if (solveTime < 1.0)
