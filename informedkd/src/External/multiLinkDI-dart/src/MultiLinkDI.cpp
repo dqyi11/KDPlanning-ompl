@@ -336,10 +336,11 @@ void MultiLinkDI::initLineSegment()
         return;
     }
 
+   uint dim = num_of_links_;
    for(size_t idx=0;idx<waypoints_.size()-1;idx++)
    {
-       Eigen::Vector3d prevConfig = waypoints_[idx].head(3);
-       Eigen::Vector3d nextConfig = waypoints_[idx+1].head(3);
+       Eigen::VectorXd prevConfig = waypoints_[idx].head(num_of_links_);
+       Eigen::VectorXd nextConfig = waypoints_[idx+1].head(num_of_links_);
 
        Eigen::VectorXd deltaConfig = nextConfig - prevConfig;
        for(double i=0.0;
@@ -350,6 +351,8 @@ void MultiLinkDI::initLineSegment()
 
            Eigen::Vector3d newPos = getEndEffectorPos(newConfig);
            Eigen::Vector3d newPosNext = getEndEffectorPos(newConfigNext);
+
+           //std::cout << "new " << newPosNext << std::endl;
 
            dart::dynamics::SimpleFramePtr lineFrame =
                    std::make_shared<dart::dynamics::SimpleFrame>(

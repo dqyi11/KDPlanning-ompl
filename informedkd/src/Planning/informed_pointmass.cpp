@@ -89,7 +89,7 @@ void planWithSimpleSetup(void)
 
     const ompl::base::OptimizationObjectivePtr opt = createOptimizationObjective(si, sampler, "problem.json");
 
-    ob::ProblemDefinitionPtr pdef = createProblem(si, "problem.json");
+    ob::ProblemDefinitionPtr pdef = createProblem(si, "snake.json");
     //opt->setCostThreshold(ob::Cost(1.51));
     pdef->setOptimizationObjective(opt);
 
@@ -100,12 +100,12 @@ void planWithSimpleSetup(void)
     planner->setup();
 
     // Run planner
-    //ob::PlannerStatus solved = planner->solve(60.0);
+    ob::PlannerStatus solved = planner->solve(60.0);
 
-    ob::PlannerStatus solved = planner->solveAndSaveSamples("samples.txt", 60.0);
+    //ob::PlannerStatus solved = planner->solveAndSaveSamples("samples.txt", 60.0);
     //ob::PlannerStatus solved = planner->solveAfterLoadingSamples("samples.txt", 60.0);
 
-    return;
+    //return;
     if(pdef->hasSolution())
     {
         std::cout << "Has a solution" << std::endl;
