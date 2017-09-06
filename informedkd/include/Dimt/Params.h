@@ -41,7 +41,7 @@ constexpr Params param_6dof = {
     6, // dof
     12, // dimensions
     3.14,  // s_max
-    1.0, // a_max
+    5.0, // a_max
     10 // v_max
 };
 constexpr Params param = param_6dof;

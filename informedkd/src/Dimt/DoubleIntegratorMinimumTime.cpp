@@ -26,22 +26,41 @@ public:
 
     void convertToTobiasFormat(const ompl::base::State* x, DI::StateVector& newX)
     {
+        /*
         // convert [x1, v1, x2, v2] to [x1, x2, v1, v2]
         for(int i=0;i<param.dof;i++)
         {
             newX[i] = x->as<ompl::base::RealVectorStateSpace::StateType>()->values[2*i];
             newX[param.dof+i] = x->as<ompl::base::RealVectorStateSpace::StateType>()->values[2*i+1];
+        }*/
+        for(int i=0;i<param.dimensions;i++)
+        {
+            newX[i] = x->as<ompl::base::RealVectorStateSpace::StateType>()->values[i];
         }
+
+        /*
+        std::cout << "COMP ";
+        for(int i=0;i<param.dimensions;i++)
+        {
+            std::cout << x->as<ompl::base::RealVectorStateSpace::StateType>()->values[i] << " ";
+            std::cout << "(" << newX[i] << ") ";
+        }
+        std::cout << std::endl;*/
         return ;
     }
 
     void convertFromTobiasFormat(const DI::StateVector& x, ompl::base::State* newX)
     {
+        /*
         // convert [x1, x2, v1, v2] to [x1, v1, x2, v2]
         for(int i=0;i<param.dof;i++)
         {
             newX->as<ompl::base::RealVectorStateSpace::StateType>()->values[2*i] = x[i];
             newX->as<ompl::base::RealVectorStateSpace::StateType>()->values[2*i+1] = x[param.dof+i];
+        }*/
+        for(int i=0;i<param.dimensions;i++)
+        {
+            newX->as<ompl::base::RealVectorStateSpace::StateType>()->values[i] = x[i];
         }
         return;
     }
@@ -156,9 +175,18 @@ public:
         std::vector<Eigen::VectorXd> waypoints;
         double minTime = doubleIntegrator_->getMinTime(newX1, newX2);
         typename DI::Trajectory traj = doubleIntegrator_->getTrajectory(newX1, newX2);
-        for(double t=0.0; t < minTime; t+=step_t)
+        double t= 0.0;
+        while(t<minTime)
         {
             newX = traj.getState(t);
+            Eigen::VectorXd x(param.dimensions);
+            convertFromTobiasFormatVec(newX, x);
+            waypoints.push_back(x);
+            t+=step_t;
+        }
+        if(t>=minTime)
+        {
+            newX = traj.getState(minTime);
             Eigen::VectorXd x(param.dimensions);
             convertFromTobiasFormatVec(newX, x);
             waypoints.push_back(x);
