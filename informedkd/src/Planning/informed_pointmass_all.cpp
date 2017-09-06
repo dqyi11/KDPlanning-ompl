@@ -124,22 +124,15 @@ void planWithSimpleSetup(void)
     // Intiatilizations for sampler
     const int dimension = param.dimensions;
 
-
     // Construct the state space we are planning in
     ob::StateSpacePtr space = std::make_shared< ob::DimtStateSpace >(dimt);
     ob::RealVectorBounds bounds(param.dimensions);
-    for(uint i=0;i<param.dimensions;i++)
+    for(uint i=0;i<param.dof;i++)
     {
-        if(i%2==0)
-        {
-            bounds.setLow(-param.s_max);
-            bounds.setHigh(param.s_max);
-        }
-        else
-        {
-            bounds.setLow(-param.v_max);
-            bounds.setHigh(param.v_max);
-        }
+        bounds.setLow(i, -param.s_max);
+        bounds.setHigh(i, param.s_max);
+        bounds.setLow(i+param.dof, -param.v_max);
+        bounds.setHigh(i+param.dof, param.v_max);
     }
     space->as<ompl::base::DimtStateSpace>()->setBounds(bounds);
     ob::SpaceInformationPtr si(new ob::SpaceInformation(space));

@@ -94,9 +94,9 @@ void planWithSimpleSetup(void)
     planner->setup();
 
     // Run planner
-    ob::PlannerStatus solved = planner->solve(10.0);
+    //ob::PlannerStatus solved = planner->solve(60.0);
 
-    //ob::PlannerStatus solved = planner->solveAndSaveSamples("samples.txt", 60.0);
+    ob::PlannerStatus solved = planner->solveAndSaveSamples("samples.txt", 60.0);
     //ob::lannerStatus solved = planner->solveAfterLoadingSamples("samples.txt", 60.0);
 
     //return;
