@@ -35,8 +35,6 @@ public:
         return ;
     }
 
-
-
     void convertFromTobiasFormat(const DI::StateVector& x, ompl::base::State* newX)
     {
         // convert [x1, x2, v1, v2] to [x1, v1, x2, v2]
@@ -44,6 +42,23 @@ public:
         {
             newX->as<ompl::base::RealVectorStateSpace::StateType>()->values[2*i] = x[i];
             newX->as<ompl::base::RealVectorStateSpace::StateType>()->values[2*i+1] = x[param.dof+i];
+        }
+        return;
+    }
+
+    void convertToTobiasFormatVec(const Eigen::VectorXd& x, DI::StateVector& newX)\
+    {
+        for(int i=0;i<param.dimensions;i++)
+        {
+            newX[i] = x[i];
+        }
+    }
+
+    void convertFromTobiasFormatVec(const DI::StateVector& x, Eigen::VectorXd& newX)
+    {
+        for(int i=0;i<param.dimensions;i++)
+        {
+            newX[i] = x[i];
         }
         return;
     }
@@ -97,6 +112,60 @@ public:
         convertFromTobiasFormat(newX, x);
         return;
     }
+
+    virtual double getMinTime(const Eigen::VectorXd & x1, const Eigen::VectorXd & x2)
+    {
+        convertToTobiasFormatVec(x1, newX1);
+        convertToTobiasFormatVec(x2, newX2);
+        return doubleIntegrator_->getMinTime(newX1, newX2);
+    }
+
+    virtual Eigen::VectorXd interpolate(const Eigen::VectorXd & x1, const Eigen::VectorXd & x2,
+                                        double t)
+    {
+        convertToTobiasFormatVec(x1, newX1);
+        convertToTobiasFormatVec(x2, newX2);
+        typename DI::Trajectory traj = doubleIntegrator_->getTrajectory(newX1, newX2);
+        newX = traj.getState(t);
+        Eigen::VectorXd x(param.dimensions);
+        convertFromTobiasFormatVec(newX, x);
+        return x;
+    }
+
+    virtual std::vector<Eigen::VectorXd> discretize(const Eigen::VectorXd & x1, const Eigen::VectorXd & x2, double step_t)
+    {
+        convertToTobiasFormatVec(x1, newX1);
+        convertToTobiasFormatVec(x2, newX2);
+        std::vector<Eigen::VectorXd> waypoints;
+        double minTime = doubleIntegrator_->getMinTime(newX1, newX2);
+        typename DI::Trajectory traj = doubleIntegrator_->getTrajectory(newX1, newX2);
+        for(double t=0.0; t < minTime; t+=step_t)
+        {
+            newX = traj.getState(t);
+            Eigen::VectorXd x(param.dimensions);
+            convertFromTobiasFormatVec(newX, x);
+            waypoints.push_back(x);
+        }
+        return waypoints;
+    }
+
+    virtual std::vector<Eigen::VectorXd> discretize(const ompl::base::State* x1, const ompl::base::State* x2, double step_t)
+    {
+        convertToTobiasFormat(x1, newX1);
+        convertToTobiasFormat(x2, newX2);
+        std::vector<Eigen::VectorXd> waypoints;
+        double minTime = doubleIntegrator_->getMinTime(newX1, newX2);
+        typename DI::Trajectory traj = doubleIntegrator_->getTrajectory(newX1, newX2);
+        for(double t=0.0; t < minTime; t+=step_t)
+        {
+            newX = traj.getState(t);
+            Eigen::VectorXd x(param.dimensions);
+            convertFromTobiasFormatVec(newX, x);
+            waypoints.push_back(x);
+        }
+        return waypoints;
+    }
+
 protected:
     std::vector<double> maxAccelerations_;
     std::vector<double> maxVelocities_;

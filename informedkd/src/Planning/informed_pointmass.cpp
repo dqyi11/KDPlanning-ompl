@@ -61,7 +61,7 @@ void planWithSimpleSetup(void)
     ob::StateValidityCheckerPtr svc = createMultiLinkDIStateValidityChecker(si, di);
     //ob::StateValidityCheckerPtr svc = createStateValidityChecker(si, "obstacles.json");
     si->setStateValidityChecker(svc);
-    si->setStateValidityCheckingResolution(0.01);  // 3%
+    si->setStateValidityCheckingResolution(0.002);  // 3%
     si->setup();
 
     ob::ProblemDefinitionPtr base_pdef = createProblem(si, "problem.json");
@@ -100,17 +100,18 @@ void planWithSimpleSetup(void)
     planner->setup();
 
     // Run planner
-    //ob::PlannerStatus solved = planner->solve(60.0);
+    ob::PlannerStatus solved = planner->solve(120.0);
 
-    ob::PlannerStatus solved = planner->solveAndSaveSamples("samples.txt", 60.0);
+    //ob::PlannerStatus solved = planner->solveAndSaveSamples("samples.txt", 60.0);
     //ob::lannerStatus solved = planner->solveAfterLoadingSamples("samples.txt", 60.0);
 
-    return;
+    //return;
     if(pdef->hasSolution())
     {
         std::cout << "Has a solution" << std::endl;
         ob::PathPtr path = pdef->getSolutionPath();
-        dumpPathToFile(path, "path.txt");
+        dumpPathToFile(path, "waypointpath.txt");
+        dumpPathToFile(path, dimt, "path.txt");
     }
 
 }
