@@ -18,8 +18,8 @@
 #include "Dimt/DoubleIntegratorMinimumTime.h"
 #include "create_obstacles.h"
 #include "load_problem.h"
-#include "../External/multiLinkDI-dart/include/MultiLinkDIUtil.hpp"
 #include "file_util.hpp"
+#include "load_herb.h"
 
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
@@ -38,21 +38,24 @@ void planWithSimpleSetup(void)
     // Intiatilizations for sampler
     const int dimension = param.dimensions;
 
+    std::shared_ptr<herb::Herb> herb = loadHerb();
+
     // Construct the state space we are planning in
     ob::StateSpacePtr space = std::make_shared< ob::DimtStateSpace >(dimt);
     ob::RealVectorBounds bounds(param.dimensions);
     for(uint i=0;i<param.dof;i++)
     {
-        bounds.setLow(i, -param.s_max);
-        bounds.setHigh(i, param.s_max);
-        bounds.setLow(i+param.dof, -param.v_max);
-        bounds.setHigh(i+param.dof, param.v_max);
+
+        bounds.setLow(i, getHerbRightArmPosLowerLimit(herb, i));
+        bounds.setHigh(i, getHerbRightArmPosUpperLimit(herb, i));
+        bounds.setLow(i+param.dof, getHerbRightArmVelLowerLimit(herb, i));
+        bounds.setHigh(i+param.dof, getHerbRightArmVelUpperLimit(herb, i));
     }
     space->as<ompl::base::DimtStateSpace>()->setBounds(bounds);
     ob::SpaceInformationPtr si(new ob::SpaceInformation(space));
     
-    std::shared_ptr<MultiLinkDI> di = createMultiLinkDI("problem.json");
-    ob::StateValidityCheckerPtr svc = createMultiLinkDIStateValidityChecker(si, di);
+
+    ob::StateValidityCheckerPtr svc = createHerbStateValidityChecker(si, herb);
     //ob::StateValidityCheckerPtr svc = createStateValidityChecker(si, "obstacles.json");
     si->setStateValidityChecker(svc);
     si->setStateValidityCheckingResolution(0.002);  // 3%
@@ -76,9 +79,9 @@ void planWithSimpleSetup(void)
     const double level_set = std::numeric_limits<double>::infinity();
     //const auto sampler = std::make_shared<ompl::base::HMCSampler>(si, base_pdef, level_set, max_call_num, batch_size, alpha, L, epsilon, sigma, max_steps);
     //const auto sampler = std::make_shared<ompl::base::MCMCSampler>(si, base_pdef, level_set, max_call_num, batch_size, alpha, sigma, max_steps);
-    //const auto sampler = std::make_shared<ompl::base::DimtHierarchicalRejectionSampler>(si, base_pdef, dimt, level_set, max_call_num, batch_size);
+    const auto sampler = std::make_shared<ompl::base::DimtHierarchicalRejectionSampler>(si, base_pdef, dimt, level_set, max_call_num, batch_size);
     //const auto sampler = std::make_shared<ompl::base::HitAndRunSampler>(si, base_pdef, level_set, max_call_num, batch_size, num_trials);
-    const auto sampler = std::make_shared<ompl::base::RejectionSampler>(si, base_pdef, level_set, max_call_num, batch_size);
+    //const auto sampler = std::make_shared<ompl::base::RejectionSampler>(si, base_pdef, level_set, max_call_num, batch_size);
     sampler->setSingleSampleTimelimit(60.);
 
     const ompl::base::OptimizationObjectivePtr opt = createOptimizationObjective(si, sampler, "problem.json");
@@ -94,7 +97,7 @@ void planWithSimpleSetup(void)
     planner->setup();
 
     // Run planner
-    //ob::PlannerStatus solved = planner->solve(60.0);
+    //ob::PlannerStatus solved = planner->solve(30.0);
 
     ob::PlannerStatus solved = planner->solveAndSaveSamples("samples.txt", 60.0);
     //ob::lannerStatus solved = planner->solveAfterLoadingSamples("samples.txt", 60.0);

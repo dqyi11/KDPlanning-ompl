@@ -1,8 +1,11 @@
 add_library(multilink-di-validity-checker
-            MultiLinkDIValidityChecker.cpp
+            HerbValidityChecker.cpp
             )
 target_link_libraries(multilink-di-validity-checker
-                      multilink-di-dart
+                      ${DART_LIBRARIES}
+		      ${aikido_LIBRARIES}
+		      ${Boost_LIBRARIES} 
+	              libherb
                      )
 
 # Ompl Planner
