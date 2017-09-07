@@ -9,3 +9,8 @@ add_library(omplwrapperLib SHARED
 target_link_libraries(omplwrapperLib
                       ompl
                      )
+
+install(TARGETS omplwrapperLib EXPORT omplwrapperLibConfig
+                    ARCHIVE DESTINATION lib
+                    LIBRARY DESTINATION lib
+                    RUNTIME DESTINATION bin)

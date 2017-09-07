@@ -14,7 +14,7 @@ bool HerbValidityChecker::isValid(const ompl::base::State *state) const
 
         //if(herb_->isCollided(vec)==true)
         {
-            return false;
+            return true;
         }
     }
     return true;

@@ -82,10 +82,17 @@ else(MSVC)
 endif(MSVC)
 
 
+
 # install the library
 install(TARGETS ompl
     DESTINATION ${CMAKE_INSTALL_LIBDIR}
     COMPONENT ompl)
+
+install(TARGETS ompl EXPORT omplConfig
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin)
+
 if(NOT MSVC)
     add_custom_command(TARGET ompl POST_BUILD
         COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:ompl>"

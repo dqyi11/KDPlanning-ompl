@@ -1,4 +1,4 @@
-add_library(multilink-di-validity-checker
+add_library(herb-validity-checker
             HerbValidityChecker.cpp
             )
 target_link_libraries(multilink-di-validity-checker
@@ -19,7 +19,7 @@ target_link_libraries(kdp_pointmass2d
                       ${JSONCPP_LIBRARY}
                       dimtLib
                       ompl
-                      multilink-di-validity-checker
+                      herb-validity-checker
                      )
 
 # Informed Pointmass
@@ -35,7 +35,7 @@ target_link_libraries(informed_pointmass
                       dimtLib 
                       omplwrapperLib
                       ompl
-                      multilink-di-validity-checker
+                      herb-validity-checker
                      )
 
 # Informed Pointmass all
@@ -66,7 +66,7 @@ target_link_libraries(informed_pointmass_diff_hmc
                    dimtLib
                    omplwrapperLib
                    ompl
-                   multilink-di-validity-checker
+                   herb-validity-checker
                   )
 
 # Informed Pointmass diff velocity bounds
@@ -82,5 +82,8 @@ target_link_libraries(informed_pointmass_diff_velocity_bounds
                    dimtLib
                    omplwrapperLib
                    ompl
-                   multilink-di-validity-checker
+                   herb-validity-checker
                   )
+
+install(TARGETS informed_pointmass RUNTIME DESTINATION bin)
+install(TARGETS informed_pointmass_all RUNTIME DESTINATION bin)
