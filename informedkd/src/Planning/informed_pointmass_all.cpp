@@ -150,7 +150,7 @@ void planWithSimpleSetup(void)
 
     int start_idx = 0;
     int iteration_num = 10;
-    double duration = 120.0; //run time in seconds
+    double duration = 10.0; //run time in seconds
     std::string caseName = "simple";
 
     for(int i=start_idx;i<iteration_num;i++)
@@ -173,12 +173,7 @@ void planWithSimpleSetup(void)
         }*/
 
 
-        // MCMC
-        {
-            std::cout << " HMC " << std::endl;
-            auto planner = createPlanner(caseName, i, MCMC, si, dimt, start_state, goal_state, duration);
-            ob::PlannerStatus solved = planner->solveAfterLoadingSamples("samples.txt", duration);
-        }
+
 
         // HRS
         {
@@ -193,6 +188,14 @@ void planWithSimpleSetup(void)
             auto planner = createPlanner(caseName, i, RS, si, dimt, start_state, goal_state, duration);
             ob::PlannerStatus solved = planner->solveAfterLoadingSamples("samples.txt", duration);
         }
+
+        // MCMC
+        {
+            std::cout << " HMC " << std::endl;
+            auto planner = createPlanner(caseName, i, MCMC, si, dimt, start_state, goal_state, duration);
+            ob::PlannerStatus solved = planner->solveAfterLoadingSamples("samples.txt", duration);
+        }
+
     }
 
 }
