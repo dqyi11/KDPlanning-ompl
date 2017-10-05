@@ -30,20 +30,6 @@ using namespace ompl::geometric;
 
 bool RRT_VERBOSE = false;
 
-void print_out_states(ompl::base::State *statePtr)
-{
-    double *val = static_cast<ompl::base::RealVectorStateSpace::StateType *>(statePtr)->values;
-
-    std::vector<double> val_vec(val, val + sizeof val / sizeof val[0]);
-
-    std::cout << "Printing sample of size: " << std::cout << val_vec.size() << " | Vec: [ ";
-    for (uint i = 0; i < param.dimensions; i++)
-    {
-        std::cout << val[i] << " ";
-    }
-    std::cout << " ]" << std::endl;
-}
-
 //
 // MyInformedRRTstar
 // This is here mainly for debugging
@@ -67,7 +53,7 @@ MyInformedRRTstar::MyInformedRRTstar(const ompl::base::SpaceInformationPtr &si) 
     // A hack to approximate an infinite connection radius
     setRewireFactor(10000.);
 
-    setTreePruning(true);
+    setTreePruning(false);
     setNewStateRejection(false);
     setDelayCC(false);
 }
@@ -178,7 +164,7 @@ base::PlannerStatus MyInformedRRTstar::solve(const base::PlannerTerminationCondi
             }
         }*/
 
-        /*
+        /* DISABLE
         //first iteration, try to explicitly connect start to goal
         if (iterations_ == 0)
         {
@@ -193,7 +179,8 @@ base::PlannerStatus MyInformedRRTstar::solve(const base::PlannerTerminationCondi
                 OMPL_INFORM("TRIVIAL PROBLEM< CONNECT START TO GOAL OPTIMALY---NOT RUNNING PLANNER ");
                 return base::PlannerStatus(false, false);
             }
-        }*/
+        }
+        */
 
         iterations_++;
 
@@ -254,10 +241,11 @@ base::PlannerStatus MyInformedRRTstar::solve(const base::PlannerTerminationCondi
                         std::cout << " GETLINE FAILED " << std::endl;
                     }
                     bool success = toState(stateStr, rstate);
-                    if( success == false)
+                    if( success == false )
                     {
                         std::cout << "FAIL " << std::endl;
                     }
+                    //std::cout << stateStr.c_str() << std::endl;
                 }
                 else
                 {
@@ -292,6 +280,7 @@ base::PlannerStatus MyInformedRRTstar::solve(const base::PlannerTerminationCondi
         // valid
         if (si_->checkMotion(nmotion->state, dstate))
         {
+            //std::cout << "check motion succeed" << std::endl;
             // create a motion
             Motion *motion = new Motion(si_);
             si_->copyState(motion->state, dstate);
@@ -365,7 +354,9 @@ base::PlannerStatus MyInformedRRTstar::solve(const base::PlannerTerminationCondi
                         break;
                     }
                     else
+                    {
                         valid[*i] = -1;
+                    }
                 }
             }
             else  // if not delayCC

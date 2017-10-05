@@ -44,12 +44,18 @@ public:
 protected:
     void simulateCurrentWaypoint();
 
+    virtual void drawBodyNode(
+          const dart::dynamics::BodyNode* bodyNode,
+          const Eigen::Vector4d& color = Eigen::Vector4d::Constant(0.5),
+          bool useDefaultColor = true,
+          bool recursive = false) const;
+
     Eigen::MatrixXd path_;
     MultiLinkDI* di_;
     int waypointIdx_;
 
-    int default_step_time = 50000;
-    int default_end_delay_time = 500000;
+    int default_step_time = 500;
+    int default_end_delay_time = 500;
 };
 
 #endif // MULTILINKDI_WINDOW_HPP_

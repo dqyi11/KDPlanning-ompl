@@ -2,11 +2,13 @@
 #include <string>
 #include "MultiLinkDI.hpp"
 #include "MultiLinkDIWindow.hpp"
+#include <dart/collision/CollisionFilter.hpp>
+#include <dart/collision/dart/DARTCollisionDetector.hpp>
 
 using namespace dart::simulation;
 using namespace dart::dynamics;
 
-MultiLinkDI::MultiLinkDI(const unsigned int num_of_links, Eigen::Vector3d& pos)
+MultiLinkDI::MultiLinkDI(const unsigned int num_of_links, const Eigen::Vector3d& pos)
     : basePos_(pos), homeConfig_(num_of_links, 0.0)
 {
   num_of_links_ = num_of_links;
@@ -19,6 +21,8 @@ MultiLinkDI::MultiLinkDI(const unsigned int num_of_links, Eigen::Vector3d& pos)
 
   di_ = Skeleton::create("di");
   world_->addSkeleton(di_);
+  di_->setSelfCollisionCheck(true);
+  di_->setAdjacentBodyCheck(false);
 
   window_.setWorld(world_);
   window_.setMultiLinkDI(this);
@@ -55,7 +59,7 @@ Eigen::VectorXd MultiLinkDI::getConfiguration()
    Eigen::VectorXd pos(num_of_links_);
    for(unsigned int idx=0;idx<num_of_links_;idx++)
    {
-       pos[idx] = di_->getDof(idx)->getPosition();
+       pos[idx] = di_->getDof(idx)->getPosition() - homeConfig_[idx];
    }
    return pos;
 }
@@ -87,8 +91,20 @@ bool MultiLinkDI::isCollided(const Eigen::VectorXd& config)
 {
   Eigen::VectorXd originalConfig = getConfiguration();
   setConfiguration(config);
+
+  auto filter = std::make_shared<dart::collision::BodyNodeCollisionFilter>();
+  dart::collision::CollisionOption option(false, 1u, nullptr);
+  option.collisionFilter = filter;
+
+  //world_->getConstraintSolver()->setCollisionDetector(dart::collision::DARTCollisionDetector::create());
   auto collisionEngine = world_->getConstraintSolver()->getCollisionDetector();
   auto collisionGroup = collisionEngine->createCollisionGroup(di_.get());
+
+
+  if (true==collisionGroup->collide(option))
+  {
+      return true;
+  }
   auto collisionGroup2 = collisionEngine->createCollisionGroup();
   for(std::vector<dart::dynamics::SkeletonPtr>::iterator it = objects_.begin();
       it != objects_.end();it++)
@@ -97,7 +113,6 @@ bool MultiLinkDI::isCollided(const Eigen::VectorXd& config)
       collisionGroup2->addShapeFramesOf(obj.get());
   }
 
-  dart::collision::CollisionOption option;
   dart::collision::CollisionResult result;
   bool collision = collisionGroup->collide(collisionGroup2.get(), option, &result);
 
@@ -310,7 +325,6 @@ BodyNode* MultiLinkDI::addBody(const SkeletonPtr& di, BodyNode* parent,
       R = depth / 2.0; h = width;
       tf.linear() = dart::math::eulerXYZToMatrix(relativeEuler);
       break;
-
   case Y:
       R = width / 2,0; h = depth;
       tf.linear() = dart::math::eulerXYZToMatrix(relativeEuler);
@@ -336,37 +350,25 @@ void MultiLinkDI::initLineSegment()
         return;
     }
 
-   uint dim = num_of_links_;
    for(size_t idx=0;idx<waypoints_.size()-1;idx++)
    {
        Eigen::VectorXd prevConfig = waypoints_[idx].head(num_of_links_);
        Eigen::VectorXd nextConfig = waypoints_[idx+1].head(num_of_links_);
 
-       Eigen::VectorXd deltaConfig = nextConfig - prevConfig;
-       for(double i=0.0;
-           i <= 1.0; i+= getResolutionSize())
-       {
-           Eigen::VectorXd newConfig = prevConfig + i * deltaConfig;
-           Eigen::VectorXd newConfigNext = newConfig + getResolutionSize() * deltaConfig;
+       dart::dynamics::SimpleFramePtr lineFrame =
+               std::make_shared<dart::dynamics::SimpleFrame>(
+                 dart::dynamics::Frame::World());
+       Eigen::Vector3d newPos = getEndEffectorPos(prevConfig);
+       Eigen::Vector3d newPosNext = getEndEffectorPos(nextConfig);
 
-           Eigen::Vector3d newPos = getEndEffectorPos(newConfig);
-           Eigen::Vector3d newPosNext = getEndEffectorPos(newConfigNext);
+       dart::dynamics::LineSegmentShapePtr lineSeg =
+               std::make_shared<dart::dynamics::LineSegmentShape>(newPos, newPosNext, 3.0);
+       lineSeg->addDataVariance(dart::dynamics::Shape::DYNAMIC_VERTICES);
 
-           //std::cout << "new " << newPosNext << std::endl;
-
-           dart::dynamics::SimpleFramePtr lineFrame =
-                   std::make_shared<dart::dynamics::SimpleFrame>(
-                     dart::dynamics::Frame::World());
-
-           dart::dynamics::LineSegmentShapePtr lineSeg =
-                   std::make_shared<dart::dynamics::LineSegmentShape>(newPos, newPosNext, 3.0);
-           lineSeg->addDataVariance(dart::dynamics::Shape::DYNAMIC_VERTICES);
-
-           lineFrame->setShape(lineSeg);
-           lineFrame->createVisualAspect();
-           lineFrame->getVisualAspect()->setColor(default_force_line_color);
-           world_->addSimpleFrame(lineFrame);
-       }
+       lineFrame->setShape(lineSeg);
+       lineFrame->createVisualAspect();
+       lineFrame->getVisualAspect()->setColor(default_force_line_color);
+       world_->addSimpleFrame(lineFrame);
 
    }
 }
