@@ -17,9 +17,9 @@
 #include "Dimt/Params.h"
 #include "Dimt/DoubleIntegratorMinimumTime.h"
 #include "create_obstacles.h"
-#include "load_problem.h"
+#include "Util/load_problem.h"
 #include "../External/multiLinkDI-dart/include/MultiLinkDIUtil.hpp"
-#include "file_util.hpp"
+#include "Util/file_util.hpp"
 
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
@@ -86,7 +86,7 @@ void planWithSimpleSetup(void)
     //opt->setCostThreshold(ob::Cost(1.51));
     pdef->setOptimizationObjective(opt);
 
-    ob::MyInformedRRTstarPtr planner = std::make_shared<ob::MyInformedRRTstar>(si);
+    og::MyInformedRRTstarPtr planner = std::make_shared<og::MyInformedRRTstar>(si);
 
     // Set the problem instance for our planner to solve
     planner->setProblemDefinition(pdef);

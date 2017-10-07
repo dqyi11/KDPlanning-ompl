@@ -6,6 +6,11 @@ add_library(samplerLib SHARED
             HitAndRunSampler.cpp
            )
 target_link_libraries(samplerLib
-                      ${OMPL_LIBRARIES}
+                      ompl
                       ${NLOPT_LIBRARIES}
                      )
+
+install(TARGETS samplerLib EXPORT samplerLibConfig
+ ARCHIVE DESTINATION lib
+ LIBRARY DESTINATION lib
+ RUNTIME DESTINATION bin)
